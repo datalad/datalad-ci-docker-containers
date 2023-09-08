@@ -1,0 +1,27 @@
+shallow_clone: true
+
+# turn of support for MS project build support (not needed)
+build: off
+
+environment:
+  APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+
+  matrix:
+  - job_name: sshd
+
+cache:
+  - sshd.dockerimg.gz -> recipes/sshd/Dockerfile, recipes/sshd/id_rsa.pub
+
+artifacts:
+  - path: sshd.dockerimg.gz
+    name: SSHD Docker image
+    type: File
+
+build_script:
+  - echo ${APPVEYOR_JOB_NAME}
+  - export DOCKER_CONTAINER_NAME="${APPVEYOR_JOB_NAME}"
+  - export DOCKER_CONTAINER_SPECPATH="recipes/${APPVEYOR_JOB_NAME}"
+  - export DOCKER_IMAGE_FILE="${APPVEYOR_JOB_NAME}.dockerimg.gz"
+  # if there is no image cached already, build one, and write it out in
+  # compressed from (to save on cache quota and network IO)
+  - "[ ! -f \"${DOCKER_IMAGE_FILE}\" ] && ( docker build -t \"${DOCKER_CONTAINER_NAME}\" \"${DOCKER_CONTAINER_SPECPATH}\" && docker save \"${DOCKER_CONTAINER_NAME}\" | gzip -9 > \"${DOCKER_IMAGE_FILE}\" ) || true"
