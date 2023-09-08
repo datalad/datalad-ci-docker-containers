@@ -11,15 +11,11 @@ environment:
   - job_name: httpd
 
 cache:
-  - sshd.dockerimg.gz -> recipes/sshd/Dockerfile, recipes/sshd/id_rsa.pub
-  - httpd.dockerimg.gz -> recipes/httpd/Dockerfile
+  - $(job_name).dockerimg.gz -> recipes/$(job_name)/Dockerfile, recipes/$(job_name)/id_rsa.pub
 
 artifacts:
-  - path: sshd.dockerimg.gz
-    name: SSHD Docker image
-    type: File
-  - path: httpd.dockerimg.gz
-    name: HTTPD Docker image
+  - path: $(job_name).dockerimg.gz
+    name: $(job_name) Docker image
     type: File
 
 build_script:
