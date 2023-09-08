@@ -8,13 +8,18 @@ environment:
 
   matrix:
   - job_name: sshd
+  - job_name: httpd
 
 cache:
   - sshd.dockerimg.gz -> recipes/sshd/Dockerfile, recipes/sshd/id_rsa.pub
+  - httpd.dockerimg.gz -> recipes/httpd/Dockerfile
 
 artifacts:
   - path: sshd.dockerimg.gz
     name: SSHD Docker image
+    type: File
+  - path: httpd.dockerimg.gz
+    name: HTTPD Docker image
     type: File
 
 build_script:
