@@ -11,7 +11,7 @@ environment:
   - job_name: httpd
 
 cache:
-  - $(job_name).dockerimg.gz -> recipes/$(job_name)/Dockerfile, recipes/$(job_name)/id_rsa.pub
+  - $(job_name).dockerimg.gz -> recipes/$(job_name)/*
 
 artifacts:
   - path: $(job_name).dockerimg.gz
