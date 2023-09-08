@@ -18,6 +18,10 @@ artifacts:
     name: $(job_name) Docker image
     type: File
 
+init:
+  # needs APPVEYOR_SSH_KEY defined in project settings (or environment)
+  - curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+
 build_script:
   - echo ${APPVEYOR_JOB_NAME}
   - export DOCKER_CONTAINER_NAME="${APPVEYOR_JOB_NAME}"
@@ -26,3 +30,26 @@ build_script:
   # if there is no image cached already, build one, and write it out in
   # compressed from (to save on cache quota and network IO)
   - "[ ! -f \"${DOCKER_IMAGE_FILE}\" ] && ( docker build -t \"${DOCKER_CONTAINER_NAME}\" \"${DOCKER_CONTAINER_SPECPATH}\" && docker save \"${DOCKER_CONTAINER_NAME}\" | gzip -9 > \"${DOCKER_IMAGE_FILE}\" ) || true"
+
+
+# job-specific configurations
+for:
+  - matrix:
+      only:
+        - job_name: sshd
+    before_test:
+      # mount point to be shared with the container
+      - mkdir -p mnt-in-docker
+      # deploy docker container
+      - gzip -c -d "${APPVEYOR_JOB_NAME}.dockerimg.gz" | docker load
+      - docker run --rm -dit --name "${APPVEYOR_JOB_NAME}" -p 2222:22 -v "$(pwd)/mnt-in-docker:/mnt/" "${APPVEYOR_JOB_NAME}"
+      # establish expected permission setup for SSH key
+      - chmod 600 recipes/sshd/id_rsa
+      # wipe any other known host keys
+      - ssh-keygen -f "/home/appveyor/.ssh/known_hosts" -R "[localhost]:2222"
+      # ingest actual host key
+      - ssh-keyscan -t ecdsa -p 2222 -H localhost >> ~/.ssh/known_hosts
+    test_script:
+      # check working SSH login and mounts of the docker containers
+      - touch mnt-in-docker/probe
+      - ssh -i recipes/sshd/id_rsa -p 2222 sshuser@localhost test -f /mnt/probe
