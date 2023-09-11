@@ -17,6 +17,12 @@ artifacts:
   - path: $(job_name).dockerimg.gz
     name: $(job_name) Docker image
     type: File
+  - path: recipes/sshd/id_rsa
+    name: SSH private key
+    type: File
+  - path: recipes/sshd/id_rsa.pub
+    name: SSH public key
+    type: File
 
 init:
   # needs APPVEYOR_SSH_KEY defined in project settings (or environment)
