@@ -2,9 +2,9 @@ FROM debian:stable-slim
 
 # install the OpenSSH with the least fuzz
 RUN apt-get update -qq -y --allow-releaseinfo-change
-# we also pull in 7z, mainly to aid use of this image for server-side
-# archive operations, like RIA would do
-RUN apt-get install -q --no-install-recommends -y openssh-server p7zip-full
+# we also pull in git and 7z, mainly to aid use of this image for server-side
+# archive/store operations, like RIA would do
+RUN apt-get install -q --no-install-recommends -y openssh-server git p7zip-full
 RUN apt-get clean
 
 # setup 'sshuser' account, with the provided SSH key authorized for
